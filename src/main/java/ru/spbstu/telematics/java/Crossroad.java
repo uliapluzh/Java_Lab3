@@ -15,7 +15,6 @@ public class Crossroad {
     private final Map<Direction, Queue<Car>> queues;
     private final Map<Direction, Boolean> directionStates;
     private final TrafficLight trafficLight;
-    private String lastPrintedMessage = "";
 
     // Матрица пересечений траекторий
     public final boolean[][] trConflicts = {
@@ -108,24 +107,19 @@ public class Crossroad {
         lock.lock();
         try {
             queues.get(from).add(car);
-
             // ждем, пока автомобиль станет первым в очереди, путь будет свободен и светофор зеленый
             while (queues.get(from).peek() != car || !canMove(from, to) ||
                     trafficLight.getState() != TrafficLight.State.GREEN) {
 
-                String message = "";
                 if (queues.get(from).peek() != car) {
-                    message = "Car from " + from + " to " + to + " is waiting because it's not first in the queue";
+                    System.out.println("Car from " + from + " to " + to + " " +
+                            "is waiting because it's not first in the queue");
                 } else if (!canMove(from, to)) {
-                    message = "Car from " + from + " to " + to + " is waiting due to conflicting directions";
+                    System.out.println("Car from " + from + " to " + to + " " +
+                            "is waiting due to conflicting directions");
                 } else if (trafficLight.getState() != TrafficLight.State.GREEN) {
-                    message = "Car from " + from + " to " + to + " is waiting because the traffic light is not green";
-                }
-
-                // Печатаем сообщение, только если оно не совпадает с предыдущим
-                if (!message.equals(lastPrintedMessage)) {
-                    System.out.println(message);
-                    lastPrintedMessage = message;
+                    System.out.println("Car from " + from + " to " + to + " " +
+                            "is waiting because the traffic light is not green");
                 }
 
                 conditions.get(from).await();
@@ -147,6 +141,7 @@ public class Crossroad {
         Direction to = car.getTo();
 
         System.out.println("Car has left from " + from + " to " + to);
+        queues.get(from).poll();
 
         lock.lock();
         try {
@@ -162,7 +157,7 @@ public class Crossroad {
             lock.unlock();
         }
 
-        queues.get(from).poll();
+        //queues.get(from).poll();
 
     }
 
